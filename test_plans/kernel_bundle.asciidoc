@@ -114,6 +114,23 @@ Check that result of `get_kernel_ids`:
 * Get a kernel bundle in executable state that contains this kernel via `get_kernel_bundle<KernelName, bundle_state::executable>(const context &)`.
 * Use `get_kernel<KernelName>()` to get kernel and check that return type is `sycl::kernel`.
 
+=== `sycl::get_kernel_id<KernelName>()` for a kernel defined in a different translation unit
+
+See link:https://github.com/KhronosGroup/SYCL-CTS/issues/1212[#1212].
+SYCL 2020 section 4.11.6 requires only that `KernelName` be defined somewhere
+in the SYCL application; it need not be defined in the same translation unit
+as the call to `get_kernel_id<KernelName>()`.
+
+Implemented in link:https://github.com/KhronosGroup/SYCL-CTS/blob/main/tests/kernel_bundle/get_kernel_id_separate_unit.cpp[get_kernel_id_separate_unit.cpp] and link:https://github.com/KhronosGroup/SYCL-CTS/blob/main/tests/kernel_bundle/get_kernel_id_separate_unit_define.cpp[get_kernel_id_separate_unit_define.cpp]:
+
+* In one translation unit, define (name) a kernel `KernelName` in a call to `handler::single_task()` that writes a known value to a buffer. This translation unit contains no call to `get_kernel_id<KernelName>()`.
+* In a second translation unit, linked into the same test executable:
+** Call `sycl::get_kernel_id<KernelName>()` and check that it returns without a compile-time or run-time diagnostic, and that `kernel_id::get_name()` is non-null.
+** Use the returned `kernel_id` to obtain a `kernel_bundle<bundle_state::executable>` and verify `has_kernel()` returns `true`.
+** Invoke the kernel (declared in the other translation unit) and verify that it produces the expected result.
+
+NOTE: A negative test (verifying that a diagnostic is issued when `KernelName` is not defined anywhere in the application) is not included, since the SYCL CTS does not currently support negative compile/link-time tests.
+
 === Tests for working with specialization constants
 
 Partially tested in https://github.com/KhronosGroup/SYCL-CTS/blob/main/tests/spec_constants/spec_constants_via_kernel_bundle.h
