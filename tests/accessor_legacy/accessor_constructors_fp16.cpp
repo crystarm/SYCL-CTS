@@ -14,7 +14,6 @@
 #include "accessor_constructors_buffer_utility.h"
 #include "accessor_constructors_local_utility.h"
 #include "accessor_types_fp16.h"
-#include "accessor_types_image_fp16.h"
 
 namespace TEST_NAMESPACE {
 
