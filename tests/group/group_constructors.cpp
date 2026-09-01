@@ -70,12 +70,12 @@ private:
 public:
   state_storage(const sycl::group<numDims>& state)
   {
-    m_linearId = state.get_linear_id();
+    m_linearId = state.get_group_linear_id();
     for (size_t dim = 0; dim < numDims; ++dim) {
-      m_id[dim] = state.get_id(dim);
+      m_id[dim] = state.get_group_id(dim);
       m_subscript[dim] = state[dim];
-      m_globalRange[dim] = state.get_global_range(dim);
       m_groupRange[dim] = state.get_group_range(dim);
+      m_globalRange[dim] = m_groupRange[dim] * state.get_max_local_range()[dim];
       m_localRange[dim] = state.get_local_range(dim);
     }
   }
@@ -109,8 +109,8 @@ template <int index, int numDims, typename success_acc_t>
 inline void check_equality_helper(success_acc_t& success,
                                   const sycl::group<numDims>& actual,
                                   const state_storage<numDims>& expected) {
-  CHECK_EQUALITY_HELPER(success, actual.get_id(index), expected.get_id(index));
-  CHECK_EQUALITY_HELPER(success, actual.get_global_range(index),
+  CHECK_EQUALITY_HELPER(success, actual.get_group_id(index), expected.get_id(index));
+  CHECK_EQUALITY_HELPER(success, actual.get_group_range(index) * actual.get_max_local_range()[index],
                         expected.get_global_range(index));
   CHECK_EQUALITY_HELPER(success, actual.get_local_range(index),
                         expected.get_local_range(index));
@@ -134,7 +134,7 @@ inline void check_equality(success_acc_t& successAcc,
   if (numDims >= 3) {
     check_equality_helper<2>(success, actual, expected);
   }
-  CHECK_EQUALITY_HELPER(success, actual.get_linear_id(), expected.get_linear_id());
+  CHECK_EQUALITY_HELPER(success, actual.get_group_linear_id(), expected.get_linear_id());
 }
 
 #undef CHECK_EQUALITY_HELPER
