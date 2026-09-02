@@ -67,7 +67,7 @@ template <int dim> void check_dim(util::logger &log) {
                 auto globalId = item.get_global().get_linear_id();
                 auto localId = item.get_local().get_linear_id();
 
-                int globalSize = group.get_global_range().size();
+                int globalSize = item.get_global_range().size();
                 int invertedVal = (globalSize - 1) - inputPtr[globalId];
 
                 localPtr[localId] = invertedVal;
